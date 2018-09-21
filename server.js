@@ -1,19 +1,47 @@
 const Koa = require('koa')
-const MongoClient = require('mongodb').MongoClient
 const bodyParser = require('koa-bodyparser')
-const db = require('./config/db')
 const app = new Koa()
-const router = require('koa-router')()
-
+const ObjectID = require('mongodb').ObjectID
+require('./mongo')(app)
 const port = 3000
+const router = require('koa-router')()
 
 app.use(bodyParser())
 
-MongoClient.connect(db.url, (err, database) => {
-    if(err) return console.log(err)
-    require('./app/routes')(router, database)
-    app.use(router.routes())
-    app.listen(port, () => {
-        console.log('We are live on ' + port)
-    })
+router.get('/notes/:id', async(ctx) => {
+    console.log('get')
+    ctx.body = await ctx.app.messagebox.findOne({ '_id': ObjectID(ctx.params.id) });
+})
+
+router.post('/notes', async (ctx, next) => {
+    const note = {
+        text: ctx.request.body.body,
+        title: ctx.request.body.title
+    }
+    ctx.response.body = await ctx.app.messagebox.insert(note)
+                                .then(result => {return result.ops[0]})
+})
+
+router.del('/notes/:id', async (ctx, next) => {
+    const id = ctx.params.id
+    const details = { '_id': new ObjectID(id) }
+    ctx.response.body = await ctx.app.messagebox.remove(details)
+                    .then(item => {return 'Note ' + id + ' deleted!'})
+})
+
+router.put('/notes/:id', async (ctx, next) => {
+    const id = ctx.params.id
+    const details = { '_id': new ObjectID(id) }
+    const note = {
+        text: ctx.request.body.body,
+        title: ctx.request.body.title
+    }
+    ctx.response.body = await ctx.app.messagebox.update(details, note)
+                            .then(() => {return note})
+})
+
+app.use(router.routes())
+
+app.listen(port, () => {
+    console.log('We are live on ' + port)
 })
