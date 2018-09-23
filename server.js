@@ -40,6 +40,14 @@ router.put('/notes/:id', async (ctx, next) => {
                             .then(() => {return note})
 })
 
+router.post('/sendText', async (ctx, next) => {
+    const text = {
+        text: ctx.request.body.text
+    }
+    ctx.response.body = await ctx.app.messagebox.insert(text)
+                            .then(result => {return result.ops[0]})
+})
+
 app.use(router.routes())
 
 app.listen(port, () => {
