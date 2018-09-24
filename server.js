@@ -42,10 +42,22 @@ router.put('/notes/:id', async (ctx, next) => {
 
 router.post('/sendText', async (ctx, next) => {
     const text = {
-        text: ctx.request.body.text
+        text: ctx.request.body.text,
+        type: ctx.request.body.type
     }
     ctx.response.body = await ctx.app.messagebox.insert(text)
                             .then(result => {return result.ops[0]})
+})
+
+router.get('/receiveText', async (ctx, next) => {
+    const data = await ctx.app.messagebox.find({ 'type': 'text' }).toArray().then(data => {
+        return data
+    }).then(array => {
+        const length = array.length
+        const index = parseInt(Math.random()*length)
+        return array[index]
+    })
+    console.log(data)
 })
 
 app.use(router.routes())
