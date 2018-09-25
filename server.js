@@ -1,12 +1,26 @@
 const Koa = require('koa')
+const multer = require('koa-multer')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const app = new Koa()
 const ObjectID = require('mongodb').ObjectID
 require('./mongo')(app)
 const port = 3000
 const router = require('koa-router')()
-
+const server = require('koa-static')
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './images')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now())
+  }
+})
+const upload = multer({ storage: storage })
 app.use(bodyParser())
+app.use(server(__dirname + '/koa-upload'))
 
 router.get('/notes/:id', async(ctx) => {
     console.log('get')
@@ -47,6 +61,10 @@ router.post('/sendText', async (ctx, next) => {
     }
     ctx.response.body = await ctx.app.messagebox.insert(text)
                             .then(result => {return result.ops[0]})
+})
+
+router.post('/sendImage', upload.single('image'), async ctx => {
+    ctx.response.body = 'success'
 })
 
 router.get('/receiveText', async (ctx, next) => {
