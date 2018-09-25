@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 app.use(bodyParser())
-app.use(server(__dirname + '/koa-upload'))
+app.use(server(__dirname + '/images/'))
 
 router.get('/notes/:id', async(ctx) => {
     console.log('get')
