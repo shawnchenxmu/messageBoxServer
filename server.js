@@ -10,16 +10,18 @@ require('./mongo')(app)
 const port = 3000
 const router = require('koa-router')()
 const server = require('koa-static')
+const util = require('./util')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './images')
     },
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now())
+        cb(null, util.getToday())
   }
 })
 const upload = multer({ storage: storage })
 app.use(bodyParser())
+// Koa looks up the files relative to the static directory, so the name of the static directory is not part of the URL.
 app.use(server(__dirname + '/images/'))
 
 router.get('/notes/:id', async(ctx) => {
@@ -55,16 +57,23 @@ router.put('/notes/:id', async (ctx, next) => {
 })
 
 router.post('/sendText', async (ctx, next) => {
-    const text = {
-        text: ctx.request.body.text,
-        type: ctx.request.body.type
+    const message = {
+        date: util.getToday(),
+        content: ctx.request.body.text,
+        type: 'text',
     }
-    ctx.response.body = await ctx.app.messagebox.insert(text)
+    ctx.response.body = await ctx.app.messagebox.insert(message)
                             .then(result => {return result.ops[0]})
 })
 
 router.post('/sendImage', upload.single('image'), async ctx => {
-    ctx.response.body = 'success'
+    const message = {
+        date: util.getToday(),
+        type: 'image',
+        content: `localhost:3000/${util.getToday()}`
+    }
+    ctx.response.body = await ctx.app.messagebox.insert(message)
+    .then(result => {return result.ops[0]})
 })
 
 router.get('/receiveText', async (ctx, next) => {
