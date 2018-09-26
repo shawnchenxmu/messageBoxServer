@@ -59,8 +59,9 @@ router.put('/notes/:id', async (ctx, next) => {
 router.post('/sendText', async (ctx, next) => {
     const message = {
         date: util.getToday(),
-        content: ctx.request.body.text,
-        type: 'text',
+        type: ctx.request.body.type,
+        name: ctx.request.body.name,
+        content: ctx.request.body.content
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
                             .then(result => {return result.ops[0]})
@@ -69,7 +70,8 @@ router.post('/sendText', async (ctx, next) => {
 router.post('/sendImage', upload.single('image'), async ctx => {
     const message = {
         date: util.getToday(),
-        type: 'image',
+        type: ctx.req.body.type,
+        name: ctx.req.body.name,
         content: `localhost:3000/${util.getToday()}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
