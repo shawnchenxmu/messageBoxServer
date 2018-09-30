@@ -72,14 +72,15 @@ router.post('/sendImage', upload.single('image'), async ctx => {
         date: util.getToday(),
         type: ctx.req.body.type,
         name: ctx.req.body.name,
-        content: `localhost:3000/${util.getToday()}`
+        content: `http://localhost:3000/${util.getToday()}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
 })
 
-router.get('/receiveText', async (ctx, next) => {
-    ctx.response.body = await ctx.app.messagebox.find({ 'type': 'text' }).toArray().then(data => {
+router.post('/receiveText', async (ctx, next) => {
+    const name = '陈昇'
+    ctx.response.body = await ctx.app.messagebox.find({ 'name': name }).toArray().then(data => {
         return data
     }).then(array => {
         const length = array.length
