@@ -79,7 +79,7 @@ router.post('/sendImage', upload.single('image'), async ctx => {
         date: util.getToday(),
         type: ctx.req.body.type,
         name: ctx.req.body.name,
-        content: `http://101.132.72.209:3000/${util.getToday()}`
+        content: `https://www.alloween.xyz/${util.getToday()}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
