@@ -79,13 +79,16 @@ router.post('/sendImage', upload.single('image'), async ctx => {
 })
 
 router.post('/receiveText', async (ctx, next) => {
-    const name = '陈昇'
-    ctx.response.body = await ctx.app.messagebox.find({ 'name': name }).toArray().then(data => {
+    const name = ctx.request.body.name
+    ctx.response.body = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday() }).toArray().then(data => {
         return data
     }).then(array => {
-        const length = array.length
-        const index = parseInt(Math.random()*length)
-        return array[index]
+        const data = {}
+        console.log(array)
+        data[array[0].type] = array[0].content
+        data[array[1].type] = array[1].content
+        console.log(data)
+        return data
     })
 })
 
