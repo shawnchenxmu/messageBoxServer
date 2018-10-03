@@ -11,6 +11,8 @@ const port = 3000
 const router = require('koa-router')()
 const server = require('koa-static')
 const util = require('./util')
+const http = require('http')
+const https = require('https')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './images')
@@ -19,6 +21,11 @@ const storage = multer.diskStorage({
         cb(null, util.getToday())
   }
 })
+var options = {
+    key: fs.readFileSync('./ssl/private.key'),
+    cert: fs.readFileSync('./ssl/full_chain.pem')
+};
+
 const upload = multer({ storage: storage })
 app.use(bodyParser())
 // Koa looks up the files relative to the static directory, so the name of the static directory is not part of the URL.
@@ -94,6 +101,5 @@ router.post('/receiveText', async (ctx, next) => {
 
 app.use(router.routes())
 
-app.listen(port, () => {
-    console.log('We are live on ' + port)
-})
+http.createServer(app.callback()).listen(80);
+https.createServer(options, app.callback()).listen(443);
