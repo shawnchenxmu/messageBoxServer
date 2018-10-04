@@ -15,7 +15,7 @@ const http = require('http')
 const https = require('https')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './images')
+        cb(null, `./images/${req.body.name}`)
     },
     filename: function (req, file, cb) {
         cb(null, util.getToday())
@@ -79,7 +79,7 @@ router.post('/sendImage', upload.single('image'), async ctx => {
         date: util.getToday(),
         type: ctx.req.body.type,
         name: ctx.req.body.name,
-        content: `https://www.alloween.xyz/${util.getToday()}`
+        content: `https://www.alloween.xyz/${ctx.req.body.name}/${util.getToday()}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
