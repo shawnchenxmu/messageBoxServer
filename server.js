@@ -87,19 +87,23 @@ router.post('/sendImage', upload.single('image'), async ctx => {
 
 router.post('/receiveText', async (ctx, next) => {
     const name = ctx.request.body.name
-    ctx.response.body = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday() }).toArray().then(data => {
+    const text = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday(), 'type': 'text'}).toArray().then(data => {
         return data
     }).then(array => {
-        const data = {}
         console.log(array)
-        data[array[0].type] = array[0].content
-        data[array[1].type] = array[1].content
-        console.log(data)
-        return data
+        return array[0].content
     })
+    const image = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday(), 'type': 'image'}).toArray().then(data => {
+        return data
+    }).then(array => {
+        console.log(array)
+        return array[0].content
+    })
+    const data = {text, image}
+    ctx.response.body = data
 })
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(80);
-https.createServer(options, app.callback()).listen(443);
+http.createServer(app.callback()).listen(3000);
+https.createServer(options, app.callback()).listen(3001);
