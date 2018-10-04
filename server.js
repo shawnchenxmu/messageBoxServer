@@ -91,13 +91,21 @@ router.post('/receiveText', async (ctx, next) => {
         return data
     }).then(array => {
         console.log(array)
-        return array[0].content
+        if(array.length) {
+            return array[0].content
+        } else {
+            return '没有数据啦！！！'
+        }
     })
     const image = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday(), 'type': 'image'}).toArray().then(data => {
         return data
     }).then(array => {
         console.log(array)
-        return array[0].content
+        if(array.length) {
+            return array[0].content
+        } else {
+            return 'https://www.alloween.xyz/nodata.JPG'
+        }
     })
     const data = {text, image}
     ctx.response.body = data
@@ -105,5 +113,5 @@ router.post('/receiveText', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(3000);
-https.createServer(options, app.callback()).listen(3001);
+http.createServer(app.callback()).listen(80);
+https.createServer(options, app.callback()).listen(443);
