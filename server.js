@@ -1,8 +1,6 @@
 const Koa = require('koa')
 const multer = require('koa-multer')
 const fs = require('fs')
-const os = require('os')
-const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const app = new Koa()
 const ObjectID = require('mongodb').ObjectID
@@ -98,7 +96,6 @@ router.post('/uploadMusic', musicUpload.single('music'), async ctx => {
     const message = {
         date: util.getToday(),
         type: 'music',
-        name: ctx.req.body.name,
         content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
@@ -133,5 +130,5 @@ router.post('/receiveText', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(4000);
-https.createServer(options, app.callback()).listen(4001);
+http.createServer(app.callback()).listen(80);
+https.createServer(options, app.callback()).listen(443);
