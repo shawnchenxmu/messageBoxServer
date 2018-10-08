@@ -17,9 +17,17 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./images/${req.body.name}`)
     },
-    filename: function (req, file, cb) {
+    filename: function (req, file, cb){
         cb(null, util.getToday())
   }
+})
+const musicStorage = multer.diskStorage({
+    destination: function (req, file, cb){
+        cb(null, `./music`)
+    },
+    filename: function (req, file, cb){
+        cb(null, file.originalname)
+    }
 })
 var options = {
     key: fs.readFileSync('./ssl/private.key'),
@@ -27,9 +35,10 @@ var options = {
 };
 
 const upload = multer({ storage: storage })
+const musicUpload = multer({ storage: musicStorage })
 app.use(bodyParser())
 // Koa looks up the files relative to the static directory, so the name of the static directory is not part of the URL.
-app.use(server(__dirname + '/images/'))
+app.use(server(__dirname))
 
 router.get('/notes/:id', async(ctx) => {
     console.log('get')
@@ -79,7 +88,18 @@ router.post('/sendImage', upload.single('image'), async ctx => {
         date: util.getToday(),
         type: ctx.req.body.type,
         name: ctx.req.body.name,
-        content: `https://www.alloween.xyz/${ctx.req.body.name}/${util.getToday()}`
+        content: `https://www.alloween.xyz/images/${ctx.req.body.name}/${util.getToday()}`
+    }
+    ctx.response.body = await ctx.app.messagebox.insert(message)
+    .then(result => {return result.ops[0]})
+})
+
+router.post('/uploadMusic', musicUpload.single('music'), async ctx => {
+    const message = {
+        date: util.getToday(),
+        type: 'music',
+        name: ctx.req.body.name,
+        content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -104,7 +124,7 @@ router.post('/receiveText', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return 'https://www.alloween.xyz/nodata.JPG'
+            return 'https://www.alloween.xyz/images/nodata.JPG'
         }
     })
     const data = {text, image}
@@ -113,5 +133,5 @@ router.post('/receiveText', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(80);
-https.createServer(options, app.callback()).listen(443);
+http.createServer(app.callback()).listen(4000);
+https.createServer(options, app.callback()).listen(4001);
