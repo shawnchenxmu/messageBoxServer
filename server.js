@@ -96,7 +96,9 @@ router.post('/uploadMusic', musicUpload.single('music'), async ctx => {
     const message = {
         date: util.getToday(),
         type: 'music',
-        content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`
+        content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`,
+        songName: ctx.req.body.songName,
+        artist: ctx.req.body.artist
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -121,10 +123,62 @@ router.post('/receiveText', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return 'https://www.alloween.xyz/images/nodata.JPG'
+            return 'https://www.alloween.xyz/nodata.JPG'
         }
     })
     const data = {text, image}
+    ctx.response.body = data
+})
+
+router.post('/getHistory', async (ctx, next) => {
+    const name = ctx.request.body.name
+    const date = util.getToday(new Date(new Date() - 86400000 * ctx.request.body.prevCount))
+    const text = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': date, 'type': 'text' }).toArray().then(data => {
+        return data
+    }).then(array => {
+        console.log(array)
+        if(array.length) {
+            return array[0].content
+        } else {
+            return '没有数据啦！！！'
+        }
+    })
+    const image = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': date, 'type': 'image'}).toArray().then(data => {
+        return data
+    }).then(array => {
+        console.log(array)
+        if(array.length) {
+            return array[0].content
+        } else {
+            return 'https://www.alloween.xyz/nodata.JPG'
+        }
+    })
+    const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
+        return data
+    }).then(array => {
+        console.log(array)
+        if(array.length) {
+            return array[0].content
+        } else {
+            return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
+        }
+    })
+    const data = {text, image, music}
+    ctx.response.body = data
+})
+
+router.get('/getMusic', async (ctx, next) => {
+    const music = await ctx.app.messagebox.find({ 'date': util.getToday(), 'type': 'music'}).toArray().then(data => {
+        return data
+    }).then(array => {
+        console.log(array)
+        if(array.length) {
+            return array[0].content
+        } else {
+            return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
+        }
+    })
+    const data = {music}
     ctx.response.body = data
 })
 
