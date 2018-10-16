@@ -11,6 +11,9 @@ const server = require('koa-static')
 const util = require('./util')
 const http = require('http')
 const https = require('https')
+const imagemin = require('imagemin')
+const imageminJpegtran = require('imagemin-jpegtran');
+const imageminPngquant = require('imagemin-pngquant');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./images/${req.body.name}`)
@@ -81,12 +84,32 @@ router.post('/sendText', async (ctx, next) => {
                             .then(result => {return result.ops[0]})
 })
 
-router.post('/sendImage', upload.single('image'), async ctx => {
+// router.post('/sendImage', upload.single('image'), async ctx => {
+//     const message = {
+//         date: util.getToday(),
+//         type: ctx.req.body.type,
+//         name: ctx.req.body.name,
+//         content: `https://www.alloween.xyz/images/${ctx.req.body.name}/${util.getToday()}`
+//     }
+//     ctx.response.body = await ctx.app.messagebox.insert(message)
+//     .then(result => {return result.ops[0]})
+// })
+
+router.post('/sendImage', multer().single('image'), async ctx => {
+    const file = ctx.req.file
+    const body = ctx.req.body
+    imagemin.buffer(file.buffer, {
+        plugins: [
+            imageminJpegtran(),
+            imageminPngquant({quality: '65-80'})]
+        }).then(data => {
+            fs.writeFileSync(`./images/${body.name}/${file.originalname}`, data)
+        }).catch(err => console.log(err))
     const message = {
         date: util.getToday(),
-        type: ctx.req.body.type,
-        name: ctx.req.body.name,
-        content: `https://www.alloween.xyz/images/${ctx.req.body.name}/${util.getToday()}`
+        type: body.type,
+        name: body.name,
+        content: `https://www.alloween.xyz/images/${body.name}/${file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
