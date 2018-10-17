@@ -14,6 +14,7 @@ const https = require('https')
 const imagemin = require('imagemin')
 const imageminJpegtran = require('imagemin-jpegtran')
 const imageminPngquant = require('imagemin-pngquant')
+const domain = process.env.NODE_ENV == 'dev'? `http://localhost:${port}` : 'https://www.alloween.xyz'
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./images/${req.body.name}`)
@@ -110,7 +111,7 @@ router.post('/sendImage', multer().single('image'), async ctx => {
         date: body.date || util.getToday(),
         type: body.type,
         name: body.name,
-        content: `https://www.alloween.xyz/images/${body.name}/${file.originalname}`
+        content: `${domain}/images/${body.name}/${file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -121,7 +122,7 @@ router.post('/uploadMusic', musicUpload.single('music'), async ctx => {
     const message = {
         date: body.date || util.getToday(),
         type: 'music',
-        content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`,
+        content: `${domain}/music/${ctx.req.file.originalname}`,
         songName: body.songName,
         artist: body.artist
     }
@@ -148,7 +149,7 @@ router.post('/receiveText', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return 'https://www.alloween.xyz/nodata.JPG'
+            return `${domain}/nodata.JPG`
         }
     })
     const data = {text, image}
@@ -175,7 +176,7 @@ router.post('/getHistory', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return 'https://www.alloween.xyz/nodata.JPG'
+            return `${domain}/nodata.JPG`
         }
     })
     // const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
@@ -185,7 +186,7 @@ router.post('/getHistory', async (ctx, next) => {
     //     if(array.length) {
     //         return array[0].content
     //     } else {
-    //         return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
+    //         return `${domain}/music/小幸运_田馥甄.mp3`
     //     }
     // })
     const data = {text, image, music}
@@ -200,7 +201,7 @@ router.get('/getMusic', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
+            return `${domain}/music/小幸运_田馥甄.mp3`
         }
     })
     const data = {music}
