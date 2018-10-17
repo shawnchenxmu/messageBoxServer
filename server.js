@@ -12,8 +12,8 @@ const util = require('./util')
 const http = require('http')
 const https = require('https')
 const imagemin = require('imagemin')
-const imageminJpegtran = require('imagemin-jpegtran');
-const imageminPngquant = require('imagemin-pngquant');
+const imageminJpegtran = require('imagemin-jpegtran')
+const imageminPngquant = require('imagemin-pngquant')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./images/${req.body.name}`)
@@ -41,44 +41,45 @@ app.use(bodyParser())
 // Koa looks up the files relative to the static directory, so the name of the static directory is not part of the URL.
 app.use(server(__dirname))
 
-router.get('/notes/:id', async(ctx) => {
-    console.log('get')
-    ctx.body = await ctx.app.messagebox.findOne({ '_id': ObjectID(ctx.params.id) });
-})
+// router.get('/notes/:id', async(ctx) => {
+//     console.log('get')
+//     ctx.body = await ctx.app.messagebox.findOne({ '_id': ObjectID(ctx.params.id) });
+// })
 
-router.post('/notes', async (ctx, next) => {
-    const note = {
-        text: ctx.request.body.body,
-        title: ctx.request.body.title
-    }
-    ctx.response.body = await ctx.app.messagebox.insert(note)
-                                .then(result => {return result.ops[0]})
-})
+// router.post('/notes', async (ctx, next) => {
+//     const note = {
+//         text: ctx.request.body.body,
+//         title: ctx.request.body.title
+//     }
+//     ctx.response.body = await ctx.app.messagebox.insert(note)
+//                                 .then(result => {return result.ops[0]})
+// })
 
-router.del('/notes/:id', async (ctx, next) => {
-    const id = ctx.params.id
-    const details = { '_id': new ObjectID(id) }
-    ctx.response.body = await ctx.app.messagebox.remove(details)
-                    .then(item => {return 'Note ' + id + ' deleted!'})
-})
+// router.del('/notes/:id', async (ctx, next) => {
+//     const id = ctx.params.id
+//     const details = { '_id': new ObjectID(id) }
+//     ctx.response.body = await ctx.app.messagebox.remove(details)
+//                     .then(item => {return 'Note ' + id + ' deleted!'})
+// })
 
-router.put('/notes/:id', async (ctx, next) => {
-    const id = ctx.params.id
-    const details = { '_id': new ObjectID(id) }
-    const note = {
-        text: ctx.request.body.body,
-        title: ctx.request.body.title
-    }
-    ctx.response.body = await ctx.app.messagebox.update(details, note)
-                            .then(() => {return note})
-})
+// router.put('/notes/:id', async (ctx, next) => {
+//     const id = ctx.params.id
+//     const details = { '_id': new ObjectID(id) }
+//     const note = {
+//         text: ctx.request.body.body,
+//         title: ctx.request.body.title
+//     }
+//     ctx.response.body = await ctx.app.messagebox.update(details, note)
+//                             .then(() => {return note})
+// })
 
 router.post('/sendText', async (ctx, next) => {
+    const body = ctx.request.body
     const message = {
-        date: util.getToday(),
-        type: ctx.request.body.type,
-        name: ctx.request.body.name,
-        content: ctx.request.body.content
+        date: body.date || util.getToday(),
+        type: body.type,
+        name: body.name,
+        content: body.content
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
                             .then(result => {return result.ops[0]})
@@ -106,7 +107,7 @@ router.post('/sendImage', multer().single('image'), async ctx => {
             fs.writeFileSync(`./images/${body.name}/${file.originalname}`, data)
         }).catch(err => console.log(err))
     const message = {
-        date: util.getToday(),
+        date: body.date || util.getToday(),
         type: body.type,
         name: body.name,
         content: `https://www.alloween.xyz/images/${body.name}/${file.originalname}`
@@ -116,12 +117,13 @@ router.post('/sendImage', multer().single('image'), async ctx => {
 })
 
 router.post('/uploadMusic', musicUpload.single('music'), async ctx => {
+    const body = ctx.req.body
     const message = {
-        date: util.getToday(),
+        date: body.date || util.getToday(),
         type: 'music',
         content: `https://www.alloween.xyz/music/${ctx.req.file.originalname}`,
-        songName: ctx.req.body.songName,
-        artist: ctx.req.body.artist
+        songName: body.songName,
+        artist: body.artist
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -176,16 +178,16 @@ router.post('/getHistory', async (ctx, next) => {
             return 'https://www.alloween.xyz/nodata.JPG'
         }
     })
-    const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
-        return data
-    }).then(array => {
-        console.log(array)
-        if(array.length) {
-            return array[0].content
-        } else {
-            return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
-        }
-    })
+    // const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
+    //     return data
+    // }).then(array => {
+    //     console.log(array)
+    //     if(array.length) {
+    //         return array[0].content
+    //     } else {
+    //         return 'https://www.alloween.xyz/music/小幸运_田馥甄.mp3'
+    //     }
+    // })
     const data = {text, image, music}
     ctx.response.body = data
 })
