@@ -5,14 +5,14 @@ const bodyParser = require('koa-bodyparser')
 const app = new Koa()
 const ObjectID = require('mongodb').ObjectID
 require('./mongo')(app)
-const port = 3000
+const port = 4000
 const router = require('koa-router')()
 const server = require('koa-static')
 const util = require('./util')
 const http = require('http')
 const https = require('https')
 const imagemin = require('imagemin')
-const imageminJpegtran = require('imagemin-jpegtran')
+const imageminMozjpeg = require('imagemin-mozjpeg')
 const imageminPngquant = require('imagemin-pngquant')
 const domain = process.env.NODE_ENV == 'dev'? `http://localhost:${port}` : 'https://www.alloween.xyz'
 const storage = multer.diskStorage({
@@ -102,16 +102,18 @@ router.post('/sendImage', multer().single('image'), async ctx => {
     const body = ctx.req.body
     imagemin.buffer(file.buffer, {
         plugins: [
-            imageminJpegtran(),
-            imageminPngquant({quality: '65-80'})]
+            imageminMozjpeg({quality: '0'}),
+            imageminPngquant({quality: '0'})]
         }).then(data => {
-            fs.writeFileSync(`./images/${body.name}/${file.originalname}`, data)
+            fs.writeFileSync(`./images/${body.name}/${file.originalname}`, file.buffer)
+            fs.writeFileSync(`./images/${body.name}/min-${file.originalname}`, data)
         }).catch(err => console.log(err))
     const message = {
         date: body.date || util.getToday(),
         type: body.type,
         name: body.name,
-        content: `${domain}/images/${body.name}/${file.originalname}`
+        content: `${domain}/images/${body.name}/${file.originalname}`,
+        min: `${domain}/images/${body.name}/min-${file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -147,9 +149,15 @@ router.post('/receiveText', async (ctx, next) => {
     }).then(array => {
         console.log(array)
         if(array.length) {
-            return array[0].content
+            return {
+                image: array[0].content,
+                imagePlaceholder: typeof array[0].min == 'undefined' ? `${domain}/images/min-nodata.JPG` : array[0].min
+            }
         } else {
-            return `${domain}/nodata.JPG`
+            return {
+                image: `${domain}/images/nodata.JPG`,
+                imagePlaceholder: `${domain}/images/min-nodata.JPG`
+            }
         }
     })
     const data = {text, image}
@@ -176,7 +184,7 @@ router.post('/getHistory', async (ctx, next) => {
         if(array.length) {
             return array[0].content
         } else {
-            return `${domain}/nodata.JPG`
+            return `${domain}/images/nodata.JPG`
         }
     })
     // const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
@@ -210,5 +218,5 @@ router.get('/getMusic', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(80);
-https.createServer(options, app.callback()).listen(443);
+http.createServer(app.callback()).listen(4000);
+https.createServer(options, app.callback()).listen(3001);
