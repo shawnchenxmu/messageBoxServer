@@ -43,7 +43,6 @@ app.use(bodyParser())
 app.use(server(__dirname))
 
 // router.get('/notes/:id', async(ctx) => {
-//     console.log('get')
 //     ctx.body = await ctx.app.messagebox.findOne({ '_id': ObjectID(ctx.params.id) });
 // })
 
@@ -137,7 +136,6 @@ router.post('/receiveText', async (ctx, next) => {
     const text = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday(), 'type': 'text'}).toArray().then(data => {
         return data
     }).then(array => {
-        console.log(array)
         if(array.length) {
             return array[0].content
         } else {
@@ -147,7 +145,6 @@ router.post('/receiveText', async (ctx, next) => {
     const image = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': util.getToday(), 'type': 'image'}).toArray().then(data => {
         return data
     }).then(array => {
-        console.log(array)
         if(array.length) {
             return {
                 image: array[0].content,
@@ -170,7 +167,6 @@ router.post('/getHistory', async (ctx, next) => {
     const text = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': date, 'type': 'text' }).toArray().then(data => {
         return data
     }).then(array => {
-        console.log(array)
         if(array.length) {
             return array[0].content
         } else {
@@ -180,7 +176,6 @@ router.post('/getHistory', async (ctx, next) => {
     const image = await ctx.app.messagebox.find({ 'name': {"$ne": name}, 'date': date, 'type': 'image'}).toArray().then(data => {
         return data
     }).then(array => {
-        console.log(array)
         if(array.length) {
             return array[0].content
         } else {
@@ -190,7 +185,6 @@ router.post('/getHistory', async (ctx, next) => {
     // const music = await ctx.app.messagebox.find({ 'date': date, 'type': 'music'}).toArray().then(data => {
     //     return data
     // }).then(array => {
-    //     console.log(array)
     //     if(array.length) {
     //         return array[0].content
     //     } else {
@@ -205,7 +199,6 @@ router.get('/getMusic', async (ctx, next) => {
     const music = await ctx.app.messagebox.find({ 'date': util.getToday(), 'type': 'music'}).toArray().then(data => {
         return data
     }).then(array => {
-        console.log(array)
         if(array.length) {
             return array[0].content
         } else {
@@ -218,5 +211,5 @@ router.get('/getMusic', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(4000);
-https.createServer(options, app.callback()).listen(3001);
+http.createServer(app.callback()).listen(80);
+https.createServer(options, app.callback()).listen(443);
