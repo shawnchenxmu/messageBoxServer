@@ -191,7 +191,7 @@ router.post('/getHistory', async (ctx, next) => {
     //         return `${domain}/music/小幸运_田馥甄.mp3`
     //     }
     // })
-    const data = {text, image, music}
+    const data = {text, image}
     ctx.response.body = data
 })
 
