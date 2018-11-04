@@ -11,16 +11,13 @@ const server = require('koa-static')
 const util = require('./util')
 const http = require('http')
 const https = require('https')
-const imagemin = require('imagemin')
-const imageminMozjpeg = require('imagemin-mozjpeg')
-const imageminPngquant = require('imagemin-pngquant')
 const domain = process.env.NODE_ENV == 'dev'? `http://localhost:${port}` : 'https://www.alloween.xyz'
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, `./images/${req.body.name}`)
     },
     filename: function (req, file, cb){
-        cb(null, util.getToday())
+        cb(null, file.originalname)
   }
 })
 const musicStorage = multer.diskStorage({
@@ -96,23 +93,14 @@ router.post('/sendText', async (ctx, next) => {
 //     .then(result => {return result.ops[0]})
 // })
 
-router.post('/sendImage', multer().single('image'), async ctx => {
+router.post('/sendImage', upload.single('image'), async ctx => {
     const file = ctx.req.file
     const body = ctx.req.body
-    imagemin.buffer(file.buffer, {
-        plugins: [
-            imageminMozjpeg({quality: '0'}),
-            imageminPngquant({quality: '0'})]
-        }).then(data => {
-            fs.writeFileSync(`./images/${body.name}/${file.originalname}`, file.buffer)
-            fs.writeFileSync(`./images/${body.name}/min-${file.originalname}`, data)
-        }).catch(err => console.log(err))
     const message = {
         date: body.date || util.getToday(),
         type: body.type,
         name: body.name,
-        content: `${domain}/images/${body.name}/${file.originalname}`,
-        min: `${domain}/images/${body.name}/min-${file.originalname}`
+        content: `${domain}/images/${body.name}/${file.originalname}`
     }
     ctx.response.body = await ctx.app.messagebox.insert(message)
     .then(result => {return result.ops[0]})
@@ -211,5 +199,5 @@ router.get('/getMusic', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(80);
+http.createServer(app.callback()).listen(4000);
 https.createServer(options, app.callback()).listen(443);
