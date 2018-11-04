@@ -73,7 +73,7 @@ app.use(server(__dirname))
 router.post('/sendText', async (ctx, next) => {
     const body = ctx.request.body
     const message = {
-        date: body.date || util.getToday(),
+        date: util.getToday(),
         type: body.type,
         name: body.name,
         content: body.content
@@ -97,7 +97,7 @@ router.post('/sendImage', upload.single('image'), async ctx => {
     const file = ctx.req.file
     const body = ctx.req.body
     const message = {
-        date: body.date || util.getToday(),
+        date: util.getToday(),
         type: body.type,
         name: body.name,
         content: `${domain}/images/${body.name}/${file.originalname}`
@@ -199,5 +199,5 @@ router.get('/getMusic', async (ctx, next) => {
 
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(4000);
+http.createServer(app.callback()).listen(80);
 https.createServer(options, app.callback()).listen(443);
